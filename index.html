@@ -39,14 +39,16 @@
         }
     </script>
 
-    <!-- Global Environment Polyfill -->
+    <!-- Global Environment Polyfill & React Setup -->
     <script>
+        // Fix for some UMD builds that expect 'global' or 'process' to exist
         window.process = { env: { NODE_ENV: 'production' } };
+        window.global = window;
     </script>
 
     <!-- React & ReactDOM -->
-    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     
     <!-- Babel (for JSX) -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -54,8 +56,8 @@
     <!-- Framer Motion -->
     <script src="https://unpkg.com/framer-motion@10.16.4/dist/framer-motion.js"></script>
 
-    <!-- Lucide Icons (Updated Version) -->
-    <script src="https://unpkg.com/lucide-react@0.460.0/dist/umd/lucide-react.min.js"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide-react@0.263.1/dist/umd/lucide-react.min.js"></script>
 
     <style>
         /* Custom scrollbar for webkit */
@@ -71,6 +73,14 @@
         }
         ::-webkit-scrollbar-thumb:hover {
             background: #57534e; 
+        }
+        /* Utilities for handling missing images gracefully */
+        .img-placeholder {
+            background-color: #e7e5e4;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #78716c;
         }
     </style>
 </head>
@@ -90,6 +100,32 @@
             BookOpen, Heart, Users, Sparkles, Mail, Phone,
             Facebook, Linkedin, ArrowLeft, Play, Quote, Scissors, Plus
         } = LucideIcons;
+
+        // --- Helper: Image Component with Fallback ---
+        // This component tries to load the image, but if it fails (user hasn't uploaded it yet),
+        // it shows a nice colored placeholder instead.
+        const ImageWithFallback = ({ src, alt, className }) => {
+            const [error, setError] = useState(false);
+            
+            if (error) {
+                return (
+                    <div className={`img-placeholder ${className} bg-stone-200 flex flex-col items-center justify-center text-stone-400 p-4 text-center`}>
+                        {Camera && <Camera size={32} className="mb-2 opacity-50"/>}
+                        <span className="text-xs uppercase tracking-widest">{alt || "Image not found"}</span>
+                        <span className="text-[10px] mt-1 text-stone-500 font-mono">{src}</span>
+                    </div>
+                );
+            }
+
+            return (
+                <img 
+                    src={src} 
+                    alt={alt} 
+                    className={`${className} object-cover`}
+                    onError={() => setError(true)}
+                />
+            );
+        };
 
         // --- Shared Components & Logic ---
 
@@ -150,19 +186,32 @@
         // --- Home Page ---
         const Home = () => {
             const scrollRef = useRef(null);
+            
+            // Updated Portfolio Data with filenames
             const portfolio = [
-            { id: 1, title: 'Editorial Glow', category: 'Fashion', color: 'bg-stone-200' },
-            { id: 2, title: 'Modern Bride', category: 'Bridal', color: 'bg-amber-50' },
-            { id: 3, title: 'Met Gala Concept', category: 'Avant Garde', color: 'bg-stone-300' },
-            { id: 4, title: 'Summer Runway', category: 'Commercial', color: 'bg-stone-100' },
-            { id: 5, title: 'Ethereal Soul', category: 'Editorial', color: 'bg-amber-100' },
+                { id: 1, title: 'Editorial Glow', category: 'Fashion', img: 'images/portfolio-fashion.jpg' },
+                { id: 2, title: 'Modern Bride', category: 'Bridal', img: 'images/portfolio-bridal.jpg' },
+                { id: 3, title: 'Met Gala Concept', category: 'Avant Garde', img: 'images/portfolio-avantgarde.jpg' },
+                { id: 4, title: 'Summer Runway', category: 'Commercial', img: 'images/portfolio-commercial.jpg' },
+                { id: 5, title: 'Ethereal Soul', category: 'Editorial', img: 'images/portfolio-editorial.jpg' },
             ];
 
             return (
             <div className="overflow-x-hidden">
                 {/* Hero */}
                 <section className="relative h-screen flex items-center justify-center overflow-hidden bg-stone-900">
-                <div className="absolute inset-0 opacity-40 bg-[url('https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&q=80')] bg-cover bg-center"></div>
+                {/* Fallback background color if image fails to load */}
+                <div className="absolute inset-0 bg-stone-800"></div>
+                
+                {/* Main Hero Image */}
+                <div className="absolute inset-0 opacity-40">
+                    <ImageWithFallback 
+                        src="images/hero-bg.jpg" 
+                        alt="Hero Background" 
+                        className="w-full h-full object-cover"
+                    />
+                </div>
+                
                 <div className="absolute inset-0 bg-gradient-to-b from-stone-900/60 via-stone-900/40 to-stone-900"></div>
                 
                 <div className="relative z-10 text-center px-4 max-w-5xl">
@@ -184,9 +233,11 @@
                 <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-20 items-center">
                     <div className="relative">
                     <div className="aspect-[4/5] bg-stone-100 rounded-3xl overflow-hidden shadow-2xl relative">
-                        <div className="absolute inset-0 flex items-center justify-center text-stone-300">
-                             {Camera ? <Camera size={48}/> : <span>Camera Icon</span>}
-                        </div>
+                        <ImageWithFallback 
+                            src="images/home-intro.jpg" 
+                            alt="Maya Sterling working" 
+                            className="w-full h-full" 
+                        />
                     </div>
                     <div className="absolute -bottom-10 -right-10 bg-amber-50 p-10 rounded-3xl hidden lg:block shadow-xl border border-amber-100">
                         <p className="font-serif text-3xl text-stone-900">12+</p>
@@ -213,8 +264,13 @@
                     <motion.div ref={scrollRef} drag="x" dragConstraints={{ right: 0, left: -1200 }} className="flex gap-8 px-8 cursor-grab active:cursor-grabbing md:px-[10%]">
                     {portfolio.map((item) => (
                         <div key={item.id} className="min-w-[300px] md:min-w-[450px]">
-                        <div className={`aspect-[3/4] ${item.color} rounded-3xl mb-6 relative overflow-hidden group`}>
-                            <div className="absolute inset-0 bg-stone-900/20 group-hover:bg-transparent transition-all duration-700"></div>
+                        <div className={`aspect-[3/4] bg-stone-200 rounded-3xl mb-6 relative overflow-hidden group`}>
+                            <ImageWithFallback 
+                                src={item.img} 
+                                alt={item.title} 
+                                className="w-full h-full transition-transform duration-700 group-hover:scale-105" 
+                            />
+                            <div className="absolute inset-0 bg-stone-900/20 group-hover:bg-transparent transition-all duration-700 pointer-events-none"></div>
                         </div>
                         <h4 className="font-serif text-2xl mb-1">{item.title}</h4>
                         <p className="text-stone-400 text-xs uppercase tracking-widest">{item.category}</p>
@@ -263,7 +319,11 @@
                 
                 <div className="grid md:grid-cols-2 gap-16 mb-24">
                 <div className="aspect-[3/4] bg-stone-100 rounded-3xl relative overflow-hidden">
-                    <div className="absolute inset-0 flex items-center justify-center text-stone-300 italic">Maya Sterling Portrait</div>
+                    <ImageWithFallback 
+                        src="images/maya-portrait.jpg" 
+                        alt="Maya Sterling Portrait" 
+                        className="w-full h-full"
+                    />
                 </div>
                 <div className="flex flex-col justify-center">
                     <h2 className="text-3xl font-serif mb-6">From Passion to Profession</h2>
@@ -325,6 +385,7 @@
                 id: 'bridal',
                 title: 'Bridal Beauty',
                 tagline: 'Your Most Beautiful Chapter',
+                img: 'images/service-bridal.jpg',
                 description: 'Your wedding day deserves makeup that\'s as timeless as your love story. My bridal services ensure you look radiant, photograph beautifully, and feel completely yourself from the first look to the last dance.',
                 includes: ['Comprehensive consultation', 'Customized trial session', 'Wedding day application', 'Touch-up kit', 'False lash application'],
                 pricing: [
@@ -337,6 +398,7 @@
                 id: 'editorial',
                 title: 'Editorial & Fashion',
                 tagline: 'Camera-Ready Artistry',
+                img: 'images/service-editorial.jpg',
                 description: 'Whether you\'re shooting for a magazine cover or building a portfolio, I deliver high-fashion makeup that translates flawlessly on camera.',
                 includes: ['Professional kit (100+ items)', 'Multiple looks capability', 'Lighting optimization', 'Collaborative direction'],
                 pricing: [
@@ -349,6 +411,7 @@
                 id: 'special',
                 title: 'Special Events',
                 tagline: 'Unforgettable Moments',
+                img: 'images/service-events.jpg',
                 description: 'From galas to graduation, look your absolute best for life\'s important moments with custom looks designed for longevity.',
                 includes: ['Gala & Award Ceremonies', 'Prom & Milestone Birthdays', 'Corporate Headshots', 'Personal 1-on-1 Lessons'],
                 pricing: [
@@ -369,7 +432,11 @@
                     <div key={service.id} className={`flex flex-col lg:flex-row gap-16 items-start ${idx % 2 !== 0 ? 'lg:flex-row-reverse' : ''}`}>
                         <div className="lg:w-1/2 w-full">
                         <div className="aspect-[4/5] bg-stone-100 rounded-3xl relative overflow-hidden">
-                            <div className="absolute inset-0 flex items-center justify-center text-stone-300 italic">{service.title} Portfolio Image</div>
+                             <ImageWithFallback 
+                                src={service.img} 
+                                alt={service.title} 
+                                className="w-full h-full"
+                            />
                         </div>
                         </div>
                         <div className="lg:w-1/2 w-full">
@@ -462,6 +529,16 @@
                         </div>
                         <Button onClick={() => navigate('contact')}>Reserve Your Spot</Button>
                     </div>
+                </div>
+
+                {/* NEW LANDSCAPE IMAGE SECTION */}
+                <div className="mb-24 rounded-3xl overflow-hidden shadow-2xl aspect-video relative">
+                    <ImageWithFallback 
+                        src="images/masterclass-hero.jpg" 
+                        alt="Masterclass in session" 
+                        className="w-full h-full object-cover"
+                    />
+                    <div className="absolute inset-0 bg-stone-900/10"></div>
                 </div>
 
                 <div className="grid lg:grid-cols-2 gap-16 mb-32 items-center">

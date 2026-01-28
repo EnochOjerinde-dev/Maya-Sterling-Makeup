@@ -1,614 +1,702 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence, useScroll, useSpring } from 'framer-motion';
-import { 
-  Menu, X, Instagram, Camera, MapPin, Calendar, 
-  Award, Star, CheckCircle, ChevronLeft, ArrowRight,
-  BookOpen, Heart, Users, Sparkles, Mail, Phone,
-  Facebook, Linkedin, ArrowLeft, Play, Quote, Scissors
-} from 'lucide-react';
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Maya Sterling | Editorial & Bridal Makeup Artist</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
 
-// --- Shared Components & Logic ---
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        serif: ['Playfair Display', 'serif'],
+                    },
+                    colors: {
+                        stone: {
+                            50: '#fafaf9',
+                            100: '#f5f5f4',
+                            200: '#e7e5e4',
+                            300: '#d6d3d1',
+                            400: '#a8a29e',
+                            500: '#78716c',
+                            600: '#57534e',
+                            800: '#292524',
+                            900: '#1c1917',
+                            950: '#0c0a09',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
 
-const Button = ({ children, variant = 'primary', className = '', onClick }) => {
-  const variants = {
-    primary: 'bg-stone-900 text-white hover:bg-stone-800 border border-stone-800',
-    outline: 'bg-transparent border-2 border-stone-900 text-stone-900 hover:bg-stone-900 hover:text-white',
-    gold: 'bg-amber-100 text-amber-900 hover:bg-amber-200 border border-amber-200',
-    white: 'bg-white text-stone-900 hover:bg-stone-100'
-  };
-  return (
-    <motion.button 
-      whileHover={{ scale: 1.03 }}
-      whileTap={{ scale: 0.97 }}
-      onClick={onClick}
-      className={`px-8 py-4 rounded-full font-medium transition-all duration-300 uppercase tracking-widest text-xs ${variants[variant]} ${className}`}
-    >
-      {children}
-    </motion.button>
-  );
-};
+    <!-- Global Environment Polyfill -->
+    <script>
+        window.process = { env: { NODE_ENV: 'production' } };
+    </script>
 
-const SectionHeading = ({ title, subtitle, light = false, align = "center" }) => (
-  <motion.div 
-    initial={{ opacity: 0, y: 20 }}
-    whileInView={{ opacity: 1, y: 0 }}
-    viewport={{ once: true }}
-    className={`mb-16 ${align === "center" ? 'text-center' : 'text-left'} px-4`}
-  >
-    <h2 className={`text-4xl md:text-6xl font-serif mb-6 ${light ? 'text-white' : 'text-stone-900'}`}>{title}</h2>
-    {subtitle && <p className={`max-w-2xl ${align === "center" ? 'mx-auto' : ''} text-lg font-light leading-relaxed ${light ? 'text-stone-300' : 'text-stone-600'}`}>{subtitle}</p>}
-    <div className={`w-20 h-1 mt-8 ${align === "center" ? 'mx-auto' : ''} ${light ? 'bg-amber-200/50' : 'bg-stone-900'}`}></div>
-  </motion.div>
-);
+    <!-- React & ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
+    <!-- Babel (for JSX) -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
-// --- MAIN APP ---
+    <!-- Framer Motion -->
+    <script src="https://unpkg.com/framer-motion@10.16.4/dist/framer-motion.js"></script>
 
-const App = () => {
-  const [currentPage, setCurrentPage] = useState('home');
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
+    <!-- Lucide Icons (Updated Version) -->
+    <script src="https://unpkg.com/lucide-react@0.460.0/dist/umd/lucide-react.min.js"></script>
 
-  const { scrollYProgress } = useScroll();
-  const scaleX = useSpring(scrollYProgress, { stiffness: 100, damping: 30 });
+    <style>
+        /* Custom scrollbar for webkit */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1c1917; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #44403c; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #57534e; 
+        }
+    </style>
+</head>
+<body class="bg-white text-stone-900 antialiased selection:bg-stone-900 selection:text-white">
+    <div id="root"></div>
 
-  useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 50);
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
-  const navigate = (page) => {
-    setCurrentPage(page);
-    setIsMenuOpen(false);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  // --- Home Page ---
-  const Home = () => {
-    const scrollRef = useRef(null);
-    const portfolio = [
-      { id: 1, title: 'Editorial Glow', category: 'Fashion', color: 'bg-stone-200' },
-      { id: 2, title: 'Modern Bride', category: 'Bridal', color: 'bg-amber-50' },
-      { id: 3, title: 'Met Gala Concept', category: 'Avant Garde', color: 'bg-stone-300' },
-      { id: 4, title: 'Summer Runway', category: 'Commercial', color: 'bg-stone-100' },
-      { id: 5, title: 'Ethereal Soul', category: 'Editorial', color: 'bg-amber-100' },
-    ];
-
-    return (
-      <div className="overflow-x-hidden">
-        {/* Hero */}
-        <section className="relative h-screen flex items-center justify-center overflow-hidden bg-stone-900">
-          <div className="absolute inset-0 opacity-40 bg-[url('https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&q=80')] bg-cover bg-center"></div>
-          <div className="absolute inset-0 bg-gradient-to-b from-stone-900/60 via-stone-900/40 to-stone-900"></div>
-          
-          <div className="relative z-10 text-center px-4 max-w-5xl">
-            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-amber-200 tracking-[0.5em] uppercase mb-6 text-sm font-light">Brooklyn's Premier Makeup Artist</motion.p>
-            <motion.h1 initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} className="text-5xl md:text-8xl text-white font-serif mb-8 leading-[1.1]">Elevate Your Beauty.<br/>Master Your Craft.</motion.h1>
-            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }} className="text-stone-300 text-lg md:text-xl mb-12 max-w-2xl mx-auto font-light leading-relaxed">
-              Brooklyn-based celebrity makeup artist specializing in editorial, bridal, and special events. Now teaching the next generation of beauty professionals.
-            </motion.p>
-            <div className="flex flex-col md:flex-row gap-6 justify-center">
-              <Button variant="white" onClick={() => navigate('contact')}>Book Your Session</Button>
-              <Button variant="outline" className="text-white border-white hover:bg-white hover:text-stone-900" onClick={() => navigate('masterclass')}>Explore Masterclass</Button>
-            </div>
-            <p className="mt-12 text-stone-500 text-xs uppercase tracking-[0.3em]">As seen in Vogue • Harper's Bazaar • NYFW</p>
-          </div>
-        </section>
-
-        {/* Home About Preview */}
-        <section className="py-32 px-4 bg-white">
-          <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-20 items-center">
-            <div className="relative">
-              <div className="aspect-[4/5] bg-stone-100 rounded-3xl overflow-hidden shadow-2xl relative">
-                <div className="absolute inset-0 flex items-center justify-center text-stone-300"><Camera size={48}/></div>
-              </div>
-              <div className="absolute -bottom-10 -right-10 bg-amber-50 p-10 rounded-3xl hidden lg:block shadow-xl border border-amber-100">
-                <p className="font-serif text-3xl text-stone-900">12+</p>
-                <p className="text-xs text-stone-500 uppercase tracking-widest mt-1">Years of Artistry</p>
-              </div>
-            </div>
-            <div>
-              <h2 className="text-4xl md:text-5xl font-serif mb-8 text-stone-900">Your Vision, My Artistry</h2>
-              <p className="text-stone-600 text-lg mb-6 leading-relaxed">
-                For over 12 years, I've transformed faces and empowered confidence across New York's most prestigious stages, editorial shoots, and unforgettable wedding days.
-              </p>
-              <p className="text-stone-600 text-lg mb-10 leading-relaxed">
-                From backstage at NYFW to intimate bridal suites in Brooklyn Heights, my approach blends technical precision with an intuitive understanding of what makes you feel like your most radiant self.
-              </p>
-              <Button variant="outline" onClick={() => navigate('about')}>Learn My Story</Button>
-            </div>
-          </div>
-        </section>
-
-        {/* Portfolio Carousel */}
-        <section className="py-32 bg-stone-50 overflow-hidden">
-          <SectionHeading title="The Portfolio" subtitle="A curation of recent work spanning fashion editorials and high-end bridal." />
-          <div className="relative mt-12">
-            <motion.div ref={scrollRef} drag="x" dragConstraints={{ right: 0, left: -1200 }} className="flex gap-8 px-8 cursor-grab active:cursor-grabbing md:px-[10%]">
-              {portfolio.map((item) => (
-                <div key={item.id} className="min-w-[300px] md:min-w-[450px]">
-                  <div className={`aspect-[3/4] ${item.color} rounded-3xl mb-6 relative overflow-hidden group`}>
-                    <div className="absolute inset-0 bg-stone-900/20 group-hover:bg-transparent transition-all duration-700"></div>
-                  </div>
-                  <h4 className="font-serif text-2xl mb-1">{item.title}</h4>
-                  <p className="text-stone-400 text-xs uppercase tracking-widest">{item.category}</p>
-                </div>
-              ))}
-            </motion.div>
-            <div className="flex justify-center mt-16 items-center gap-4">
-               <div className="w-24 h-[1px] bg-stone-200"></div>
-               <span className="text-[10px] uppercase tracking-[0.3em] text-stone-400">Swipe to view</span>
-               <div className="w-24 h-[1px] bg-stone-200"></div>
-            </div>
-          </div>
-        </section>
-
-        {/* Testimonials */}
-        <section className="py-32 bg-stone-900 text-white overflow-hidden">
-          <div className="max-w-4xl mx-auto px-4 text-center">
-            <Quote className="mx-auto mb-10 text-amber-200 opacity-50" size={48} />
-            <div className="text-2xl md:text-3xl font-serif italic leading-relaxed mb-8">
-              "Maya made me feel like a goddess on my wedding day. She listened to exactly what I wanted and elevated it beyond my expectations. A year later, I still get compliments on my bridal makeup!"
-            </div>
-            <p className="text-amber-200 uppercase tracking-widest text-sm">— Jasmine R., Brooklyn Bride</p>
-          </div>
-        </section>
-
-        {/* Social Proof logos */}
-        <section className="py-20 border-b border-stone-100">
-           <div className="max-w-7xl mx-auto px-4">
-              <p className="text-center text-stone-400 text-[10px] uppercase tracking-[0.4em] mb-12">Trusted By Industry Leaders</p>
-              <div className="flex flex-wrap justify-center gap-12 md:gap-24 grayscale opacity-40 items-center">
-                 {['VOGUE', "Harper's BAZAAR", 'ESSENCE', 'NYFW', 'THE KNOT'].map(logo => (
-                   <span key={logo} className="text-xl md:text-3xl font-serif">{logo}</span>
-                 ))}
-              </div>
-           </div>
-        </section>
-      </div>
-    );
-  };
-
-  // --- About Page ---
-  const About = () => (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="pt-32 pb-24">
-      <div className="max-w-5xl mx-auto px-4">
-        <h1 className="text-6xl md:text-8xl font-serif mb-16 text-stone-900">The Artist Behind the Brush</h1>
+    <script type="text/babel">
+        // --- Destructuring Globals ---
+        const { useState, useEffect, useRef } = React;
+        const { motion, AnimatePresence, useScroll, useSpring } = window.Motion;
         
-        <div className="grid md:grid-cols-2 gap-16 mb-24">
-          <div className="aspect-[3/4] bg-stone-100 rounded-3xl relative overflow-hidden">
-             <div className="absolute inset-0 flex items-center justify-center text-stone-300 italic">Maya Sterling Portrait</div>
-          </div>
-          <div className="flex flex-col justify-center">
-            <h2 className="text-3xl font-serif mb-6">From Passion to Profession</h2>
-            <p className="text-stone-600 text-lg mb-6 leading-relaxed">
-              My love affair with makeup began in my grandmother's bathroom in Bed-Stuy, experimenting with her lipstick collection while she told me stories about Brooklyn in the '60s. 
-            </p>
-            <p className="text-stone-600 text-lg mb-6 leading-relaxed">
-              What started as childhood play evolved into a calling that would take me from the MAC counter at Macy's to the runways of New York Fashion Week. After graduating from the prestigious Makeup Designory in 2012, I immersed myself in New York's beauty scene.
-            </p>
-          </div>
-        </div>
+        // Safely access Lucide icons
+        const LucideIcons = window.lucideReact || {};
+        const { 
+            Menu, X, Instagram, Camera, MapPin, Calendar, 
+            Award, Star, CheckCircle, ChevronLeft, ArrowRight,
+            BookOpen, Heart, Users, Sparkles, Mail, Phone,
+            Facebook, Linkedin, ArrowLeft, Play, Quote, Scissors, Plus
+        } = LucideIcons;
 
-        <div className="grid md:grid-cols-3 gap-12 py-24 border-y border-stone-100 mb-24">
-           <div>
-              <h3 className="text-xl font-serif mb-4">Our Philosophy</h3>
-              <p className="text-stone-500 text-sm leading-relaxed">Great makeup enhances—it never masks. My approach celebrates your unique features, skin tone, and personal style while ensuring you feel confident and camera-ready.</p>
-           </div>
-           <div>
-              <h3 className="text-xl font-serif mb-4">Inclusivity First</h3>
-              <p className="text-stone-500 text-sm leading-relaxed">Beauty has no boundaries. My kit is stocked for every skin tone, type, and texture. I prioritize cruelty-free products whenever possible.</p>
-           </div>
-           <div>
-              <h3 className="text-xl font-serif mb-4">Education Legacy</h3>
-              <p className="text-stone-500 text-sm leading-relaxed">Knowledge should be shared. I'm committed to elevating the next generation of artists through hands-on mentorship and business training.</p>
-           </div>
-        </div>
+        // --- Shared Components & Logic ---
 
-        <div className="bg-stone-50 p-12 md:p-20 rounded-3xl">
-          <h3 className="text-3xl font-serif mb-12">Credentials & Features</h3>
-          <div className="grid md:grid-cols-2 gap-12">
-            <div>
-              <h4 className="text-xs uppercase tracking-widest text-amber-600 font-bold mb-6">Professional Training</h4>
-              <ul className="space-y-4 text-stone-600">
-                <li>• Makeup Designory (MUD), NYC Graduate</li>
-                <li>• Advanced Airbrush Certification</li>
-                <li>• Bridal Makeup Specialist Certification</li>
-                <li>• Trained under Pat McGrath & Sam Fine</li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="text-xs uppercase tracking-widest text-amber-600 font-bold mb-6">Featured In</h4>
-              <ul className="space-y-4 text-stone-600">
-                <li>• Vogue Magazine & Harper's Bazaar</li>
-                <li>• Essence Magazine & Brides</li>
-                <li>• The Knot Hall of Fame Inductee</li>
-                <li>• NYFW Backstage (2018-2023)</li>
-              </ul>
-            </div>
-          </div>
-        </div>
-      </div>
-    </motion.div>
-  );
+        const Button = ({ children, variant = 'primary', className = '', onClick }) => {
+            const variants = {
+                primary: 'bg-stone-900 text-white hover:bg-stone-800 border border-stone-800',
+                outline: 'bg-transparent border-2 border-stone-900 text-stone-900 hover:bg-stone-900 hover:text-white',
+                gold: 'bg-amber-100 text-amber-900 hover:bg-amber-200 border border-amber-200',
+                white: 'bg-white text-stone-900 hover:bg-stone-100'
+            };
+            return (
+                <motion.button 
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
+                onClick={onClick}
+                className={`px-8 py-4 rounded-full font-medium transition-all duration-300 uppercase tracking-widest text-xs ${variants[variant]} ${className}`}
+                >
+                {children}
+                </motion.button>
+            );
+        };
 
-  // --- Services Page ---
-  const Services = () => {
-    const services = [
-      {
-        id: 'bridal',
-        title: 'Bridal Beauty',
-        tagline: 'Your Most Beautiful Chapter',
-        description: 'Your wedding day deserves makeup that\'s as timeless as your love story. My bridal services ensure you look radiant, photograph beautifully, and feel completely yourself from the first look to the last dance.',
-        includes: ['Comprehensive consultation', 'Customized trial session', 'Wedding day application', 'Touch-up kit', 'False lash application'],
-        pricing: [
-          { label: 'The Essential Bride', price: '$450', desc: 'One trial + Wedding day application' },
-          { label: 'The Luxe Bride', price: '$850', desc: 'Two trials + Airbrush option + On-site touchups (2hr)' },
-          { label: 'The Complete Bridal Party', price: 'Custom', desc: 'Bride + 5 members + Mother of the bride' }
-        ]
-      },
-      {
-        id: 'editorial',
-        title: 'Editorial & Fashion',
-        tagline: 'Camera-Ready Artistry',
-        description: 'Whether you\'re shooting for a magazine cover or building a portfolio, I deliver high-fashion makeup that translates flawlessly on camera.',
-        includes: ['Professional kit (100+ items)', 'Multiple looks capability', 'Lighting optimization', 'Collaborative direction'],
-        pricing: [
-          { label: 'Full Day Rate', price: '$800', desc: 'Up to 8 hours' },
-          { label: 'Half Day Rate', price: '$500', desc: 'Up to 4 hours' },
-          { label: 'Hourly Rate', price: '$150', desc: 'For short sessions' }
-        ]
-      },
-      {
-        id: 'special',
-        title: 'Special Events',
-        tagline: 'Unforgettable Moments',
-        description: 'From galas to graduation, look your absolute best for life\'s important moments with custom looks designed for longevity.',
-        includes: ['Gala & Award Ceremonies', 'Prom & Milestone Birthdays', 'Corporate Headshots', 'Personal 1-on-1 Lessons'],
-        pricing: [
-          { label: 'Special Event Makeup', price: '$200', desc: 'In-studio session' },
-          { label: 'Group Sessions (3+)', price: '$175', desc: 'Per person rate' },
-          { label: 'Private 1-on-1 Lesson', price: '$250', desc: '2 hours intensive' }
-        ]
-      }
-    ];
-
-    return (
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="pt-32 pb-24">
-        <div className="max-w-7xl mx-auto px-4">
-          <SectionHeading title="Services Tailored to Your Moment" subtitle="Professional artistry for every milestone, from the runway to the aisle." />
-          
-          <div className="space-y-32">
-            {services.map((service, idx) => (
-              <div key={service.id} className={`flex flex-col lg:flex-row gap-16 items-start ${idx % 2 !== 0 ? 'lg:flex-row-reverse' : ''}`}>
-                <div className="lg:w-1/2 w-full">
-                  <div className="aspect-[4/5] bg-stone-100 rounded-3xl relative overflow-hidden">
-                     <div className="absolute inset-0 flex items-center justify-center text-stone-300 italic">{service.title} Portfolio Image</div>
-                  </div>
-                </div>
-                <div className="lg:w-1/2 w-full">
-                  <span className="text-amber-600 font-bold uppercase tracking-widest text-xs mb-4 block">{service.tagline}</span>
-                  <h2 className="text-4xl md:text-5xl font-serif mb-6">{service.title}</h2>
-                  <p className="text-stone-600 text-lg mb-10 leading-relaxed">{service.description}</p>
-                  
-                  <div className="bg-stone-50 p-8 rounded-3xl mb-10">
-                    <h4 className="font-serif text-lg mb-6">Service Tiers</h4>
-                    <div className="space-y-6">
-                      {service.pricing.map((p, i) => (
-                        <div key={i} className="flex justify-between items-start border-b border-stone-200 pb-4">
-                          <div>
-                            <p className="font-medium text-stone-900">{p.label}</p>
-                            <p className="text-xs text-stone-500 mt-1">{p.desc}</p>
-                          </div>
-                          <p className="font-serif text-xl">{p.price}</p>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4 mb-10">
-                    {service.includes.map((item, i) => (
-                      <div key={i} className="flex items-center gap-2 text-sm text-stone-600">
-                        <CheckCircle size={14} className="text-amber-600" />
-                        <span>{item}</span>
-                      </div>
-                    ))}
-                  </div>
-                  
-                  <Button onClick={() => navigate('contact')}>Request Your Booking</Button>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Booking Info Footer */}
-          <div className="mt-32 p-12 md:p-20 bg-stone-900 text-white rounded-3xl grid md:grid-cols-2 gap-16">
-            <div>
-              <h3 className="text-3xl font-serif mb-8">How to Book</h3>
-              <ul className="space-y-6">
-                {[
-                  'Complete the inquiry form below',
-                  'Receive custom proposal within 24-48 hours',
-                  'Secure your date with 50% deposit',
-                  'Finalize details 2 weeks before session'
-                ].map((step, i) => (
-                  <li key={i} className="flex gap-4">
-                    <span className="text-amber-200 font-serif text-2xl">0{i+1}</span>
-                    <p className="text-stone-400">{step}</p>
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div>
-              <h3 className="text-3xl font-serif mb-8">Policies</h3>
-              <p className="text-stone-400 mb-6">50% non-refundable deposit required to book. Final payment due 7 days before appointment. Cancellations within 14 days forfeit deposit.</p>
-              <div className="flex items-center gap-2 text-amber-200 text-sm">
-                <MapPin size={16}/> <span>Travel fees apply for locations outside Brooklyn.</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </motion.div>
-    );
-  };
-
-  // --- Masterclass Page ---
-  const Masterclass = () => {
-    const curriculum = [
-      { week: '1-2', title: 'Foundations & Fundamentals', topics: ['Color theory & Anatomy', 'Skin prep & Matching', 'Sanitation Protocols', 'Building a Kit'] },
-      { week: '3-4', title: 'Mastering Techniques', topics: ['Contouring & Highlighting', 'Eye Techniques (Cut Crease, etc)', 'Lash Application', 'Airbrush Fundamentals'] },
-      { week: '5-6', title: 'Specializations', topics: ['Bridal (12+ Hour Wear)', 'Editorial & Runway', 'Mature Skin Expertise', 'HD Photography Makeup'] },
-      { week: '7-8', title: 'Business & Launch', topics: ['Pricing & Profitability', 'Contracts & Policies', 'Marketing & Social Media', 'Live Portfolio Shoot'] }
-    ];
-
-    return (
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="pt-32 pb-24 bg-white">
-        <div className="max-w-6xl mx-auto px-4">
-          <div className="text-center mb-24">
-            <span className="text-amber-600 font-bold uppercase tracking-[0.4em] text-xs mb-6 block">8-Week Professional Intensive</span>
-            <h1 className="text-5xl md:text-8xl font-serif mb-8 text-stone-900 leading-[1.1]">The Makeup Artistry Masterclass</h1>
-            <p className="text-stone-600 text-xl max-w-2xl mx-auto font-light mb-12">Learn the technical skills, business strategies, and insider knowledge to launch your makeup artistry career with confidence.</p>
-            <div className="flex flex-col items-center gap-4">
-               <div className="bg-amber-50 px-8 py-3 rounded-full border border-amber-100 flex items-center gap-4">
-                  <span className="text-stone-900 font-medium">Next Cohort: March 15, 2026</span>
-                  <div className="w-[1px] h-4 bg-amber-200"></div>
-                  <span className="text-amber-700 font-bold">3 of 8 Spots Remaining</span>
-               </div>
-               <Button onClick={() => navigate('contact')}>Reserve Your Spot</Button>
-            </div>
-          </div>
-
-          <div className="grid lg:grid-cols-2 gap-16 mb-32 items-center">
-            <div className="bg-stone-900 p-12 rounded-3xl text-white">
-              <h3 className="text-3xl font-serif mb-8">Why This Class?</h3>
-              <p className="text-stone-400 mb-10 leading-relaxed italic">"Tired of YouTube tutorials that don't translate to real clients? You need professional techniques that work on all skin tones and the business systems to actually book clients."</p>
-              <ul className="space-y-4">
-                {['Small class sizes (Max 8)', 'Hands-on practice every week', 'Business training included', 'Certificate of Completion'].map((item, i) => (
-                  <li key={i} className="flex items-center gap-3 text-sm">
-                    <CheckCircle className="text-amber-400" size={18} />
-                    <span>{item}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div className="space-y-8">
-              <h3 className="text-3xl font-serif text-stone-900">Program Curriculum</h3>
-              <div className="space-y-4">
-                {curriculum.map((c, i) => (
-                  <details key={i} className="group border-b border-stone-100 pb-4">
-                    <summary className="list-none cursor-pointer flex justify-between items-center text-lg font-serif">
-                      <span>Week {c.week}: {c.title}</span>
-                      <Plus className="group-open:rotate-45 transition-transform" size={20}/>
-                    </summary>
-                    <ul className="mt-4 grid grid-cols-2 gap-2">
-                      {c.topics.map((t, j) => <li key={j} className="text-stone-500 text-sm">• {t}</li>)}
-                    </ul>
-                  </details>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-stone-50 p-12 md:p-24 rounded-[3rem] text-center">
-            <SectionHeading title="Invest In Your Future" subtitle="Investment: $2,800" />
-            <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-               <div className="bg-white p-10 rounded-3xl border border-stone-100 shadow-sm">
-                  <h4 className="font-serif text-2xl mb-4">Pay In Full</h4>
-                  <p className="text-4xl font-serif mb-6">$2,800</p>
-                  <p className="text-stone-500 text-sm mb-8">Save $200 compared to payment plans. Priority cohort selection.</p>
-                  <Button variant="outline" className="w-full">Enroll Today</Button>
-               </div>
-               <div className="bg-white p-10 rounded-3xl border border-stone-100 shadow-sm">
-                  <h4 className="font-serif text-2xl mb-4">Payment Plan</h4>
-                  <p className="text-4xl font-serif mb-6">$1,000 <span className="text-sm font-sans text-stone-400 font-light">+ 3 Payments</span></p>
-                  <p className="text-stone-500 text-sm mb-8">$1k Deposit + 3 monthly payments of $600. Manage your cash flow.</p>
-                  <Button variant="outline" className="w-full">Start Plan</Button>
-               </div>
-            </div>
-          </div>
-        </div>
-      </motion.div>
-    );
-  };
-
-  const Contact = () => (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="pt-32 pb-24">
-      <div className="max-w-7xl mx-auto px-4 grid lg:grid-cols-2 gap-24">
-        <div>
-          <h1 className="text-6xl font-serif mb-8">Let's Create Something Beautiful</h1>
-          <p className="text-stone-600 text-lg mb-12">Whether you're booking your dream makeup session or ready to launch your career, please reach out. I respond to all inquiries within 48 hours.</p>
-          
-          <div className="space-y-10">
-            <div className="flex gap-6">
-              <div className="bg-amber-50 p-4 rounded-full h-fit"><Mail className="text-amber-700"/></div>
-              <div>
-                <h4 className="font-serif text-xl">Email Us</h4>
-                <p className="text-stone-500">hello@mayasterlingmakeup.com</p>
-              </div>
-            </div>
-            <div className="flex gap-6">
-              <div className="bg-amber-50 p-4 rounded-full h-fit"><MapPin className="text-amber-700"/></div>
-              <div>
-                <h4 className="font-serif text-xl">Studio Location</h4>
-                <p className="text-stone-500">Williamsburg, Brooklyn, NY<br/>(Exact address provided upon booking)</p>
-              </div>
-            </div>
-            <div className="flex gap-6">
-              <div className="bg-amber-50 p-4 rounded-full h-fit"><Phone className="text-amber-700"/></div>
-              <div>
-                <h4 className="font-serif text-xl">Text or Call</h4>
-                <p className="text-stone-500">(718) 555-MAYA (6292)</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-stone-50 p-10 md:p-16 rounded-3xl border border-stone-100">
-           <form className="space-y-6" onSubmit={e => e.preventDefault()}>
-              <div className="grid md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <label className="text-xs uppercase tracking-widest text-stone-400 font-bold">Name</label>
-                  <input type="text" className="w-full bg-white border border-stone-200 rounded-xl px-4 py-4 focus:ring-2 focus:ring-stone-900 outline-none transition-all" />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-xs uppercase tracking-widest text-stone-400 font-bold">Email</label>
-                  <input type="email" className="w-full bg-white border border-stone-200 rounded-xl px-4 py-4 focus:ring-2 focus:ring-stone-900 outline-none transition-all" />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <label className="text-xs uppercase tracking-widest text-stone-400 font-bold">I'm Interested In</label>
-                <select className="w-full bg-white border border-stone-200 rounded-xl px-4 py-4 focus:ring-2 focus:ring-stone-900 outline-none transition-all appearance-none">
-                  <option>Bridal Beauty</option>
-                  <option>Editorial / Fashion</option>
-                  <option>Special Event</option>
-                  <option>Masterclass Enrollment</option>
-                </select>
-              </div>
-              <div className="space-y-2">
-                <label className="text-xs uppercase tracking-widest text-stone-400 font-bold">Tell Me About Your Vision</label>
-                <textarea rows="4" className="w-full bg-white border border-stone-200 rounded-xl px-4 py-4 focus:ring-2 focus:ring-stone-900 outline-none transition-all"></textarea>
-              </div>
-              <Button className="w-full">Send Message</Button>
-           </form>
-        </div>
-      </div>
-    </motion.div>
-  );
-
-  const Plus = ({ className, size }) => (
-    <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-  );
-
-  return (
-    <div className="min-h-screen bg-white font-sans text-stone-900 selection:bg-stone-900 selection:text-white">
-      <motion.div className="fixed top-0 left-0 right-0 h-1 bg-amber-600 z-[70] origin-left" style={{ scaleX }} />
-      
-      {/* Navigation */}
-      <nav className={`fixed w-full z-50 transition-all duration-700 ${scrolled ? 'bg-white/90 backdrop-blur-md py-4 shadow-sm' : 'bg-transparent py-10'}`}>
-        <div className="max-w-7xl mx-auto px-6 flex justify-between items-center">
-          <button onClick={() => navigate('home')} className={`text-2xl font-serif tracking-[0.2em] transition-colors ${!scrolled && currentPage === 'home' && !isMenuOpen ? 'text-white' : 'text-stone-900'}`}>
-            MAYA STERLING
-          </button>
-          
-          <div className="hidden md:flex gap-10">
-            {['home', 'about', 'services', 'masterclass', 'contact'].map((page) => (
-              <button 
-                key={page} 
-                onClick={() => navigate(page)}
-                className={`text-[10px] uppercase tracking-[0.3em] font-bold transition-all hover:text-amber-600 ${
-                  currentPage === page ? 'text-amber-600' : (!scrolled && currentPage === 'home' ? 'text-white' : 'text-stone-500')
-                }`}
-              >
-                {page}
-              </button>
-            ))}
-          </div>
-
-          <button 
-            className={`p-2 transition-colors ${!scrolled && currentPage === 'home' && !isMenuOpen ? 'text-white' : 'text-stone-900'}`}
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-          >
-            {isMenuOpen ? <X size={28} /> : <Menu size={28} />}
-          </button>
-        </div>
-
-        {/* Fullscreen Mobile Menu */}
-        <AnimatePresence>
-          {isMenuOpen && (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-stone-950 z-[60] flex flex-col items-center justify-center gap-8">
-               {['home', 'about', 'services', 'masterclass', 'contact'].map((page) => (
-                 <motion.button 
-                   key={page} 
-                   whileHover={{ scale: 1.1 }}
-                   onClick={() => navigate(page)} 
-                   className="text-white text-5xl md:text-7xl font-serif lowercase hover:text-amber-200 transition-colors"
-                 >
-                   {page}
-                 </motion.button>
-               ))}
-               <div className="flex gap-8 mt-12">
-                 <Instagram className="text-stone-600 hover:text-white cursor-pointer"/>
-                 <Facebook className="text-stone-600 hover:text-white cursor-pointer"/>
-                 <Linkedin className="text-stone-600 hover:text-white cursor-pointer"/>
-               </div>
+        const SectionHeading = ({ title, subtitle, light = false, align = "center" }) => (
+            <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                className={`mb-16 ${align === "center" ? 'text-center' : 'text-left'} px-4`}
+            >
+                <h2 className={`text-4xl md:text-6xl font-serif mb-6 ${light ? 'text-white' : 'text-stone-900'}`}>{title}</h2>
+                {subtitle && <p className={`max-w-2xl ${align === "center" ? 'mx-auto' : ''} text-lg font-light leading-relaxed ${light ? 'text-stone-300' : 'text-stone-600'}`}>{subtitle}</p>}
+                <div className={`w-20 h-1 mt-8 ${align === "center" ? 'mx-auto' : ''} ${light ? 'bg-amber-200/50' : 'bg-stone-900'}`}></div>
             </motion.div>
-          )}
-        </AnimatePresence>
-      </nav>
+        );
 
-      <main>
-        <AnimatePresence mode="wait">
-          {currentPage === 'home' && <Home key="home" />}
-          {currentPage === 'about' && <About key="about" />}
-          {currentPage === 'services' && <Services key="services" />}
-          {currentPage === 'masterclass' && <Masterclass key="masterclass" />}
-          {currentPage === 'contact' && <Contact key="contact" />}
-        </AnimatePresence>
-      </main>
+        // --- MAIN APP ---
 
-      {/* Footer */}
-      <footer className="bg-stone-950 text-white pt-32 pb-12 px-6">
-        <div className="max-w-7xl mx-auto">
-           <div className="grid lg:grid-cols-4 gap-16 mb-24">
-              <div className="lg:col-span-2">
-                 <h2 className="text-3xl font-serif mb-8 tracking-widest">MAYA STERLING</h2>
-                 <p className="text-stone-500 max-w-sm mb-10 leading-relaxed">Empowering confidence through professional makeup artistry and world-class education. Based in Brooklyn, NY.</p>
-                 <div className="flex gap-4">
-                    {[Instagram, Facebook, Linkedin].map((Icon, i) => (
-                      <a key={i} href="#" className="p-3 bg-stone-900 rounded-full hover:bg-amber-600 transition-colors">
-                        <Icon size={18}/>
-                      </a>
+        const App = () => {
+        const [currentPage, setCurrentPage] = useState('home');
+        const [isMenuOpen, setIsMenuOpen] = useState(false);
+        const [scrolled, setScrolled] = useState(false);
+
+        const { scrollYProgress } = useScroll();
+        const scaleX = useSpring(scrollYProgress, { stiffness: 100, damping: 30 });
+
+        useEffect(() => {
+            const handleScroll = () => setScrolled(window.scrollY > 50);
+            window.addEventListener('scroll', handleScroll);
+            return () => window.removeEventListener('scroll', handleScroll);
+        }, []);
+
+        const navigate = (page) => {
+            setCurrentPage(page);
+            setIsMenuOpen(false);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        };
+
+        // --- Home Page ---
+        const Home = () => {
+            const scrollRef = useRef(null);
+            const portfolio = [
+            { id: 1, title: 'Editorial Glow', category: 'Fashion', color: 'bg-stone-200' },
+            { id: 2, title: 'Modern Bride', category: 'Bridal', color: 'bg-amber-50' },
+            { id: 3, title: 'Met Gala Concept', category: 'Avant Garde', color: 'bg-stone-300' },
+            { id: 4, title: 'Summer Runway', category: 'Commercial', color: 'bg-stone-100' },
+            { id: 5, title: 'Ethereal Soul', category: 'Editorial', color: 'bg-amber-100' },
+            ];
+
+            return (
+            <div className="overflow-x-hidden">
+                {/* Hero */}
+                <section className="relative h-screen flex items-center justify-center overflow-hidden bg-stone-900">
+                <div className="absolute inset-0 opacity-40 bg-[url('https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&q=80')] bg-cover bg-center"></div>
+                <div className="absolute inset-0 bg-gradient-to-b from-stone-900/60 via-stone-900/40 to-stone-900"></div>
+                
+                <div className="relative z-10 text-center px-4 max-w-5xl">
+                    <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-amber-200 tracking-[0.5em] uppercase mb-6 text-sm font-light">Brooklyn's Premier Makeup Artist</motion.p>
+                    <motion.h1 initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} className="text-5xl md:text-8xl text-white font-serif mb-8 leading-[1.1]">Elevate Your Beauty.<br/>Master Your Craft.</motion.h1>
+                    <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }} className="text-stone-300 text-lg md:text-xl mb-12 max-w-2xl mx-auto font-light leading-relaxed">
+                    Brooklyn-based celebrity makeup artist specializing in editorial, bridal, and special events. Now teaching the next generation of beauty professionals.
+                    </motion.p>
+                    <div className="flex flex-col md:flex-row gap-6 justify-center">
+                    <Button variant="white" onClick={() => navigate('contact')}>Book Your Session</Button>
+                    <Button variant="outline" className="text-white border-white hover:bg-white hover:text-stone-900" onClick={() => navigate('masterclass')}>Explore Masterclass</Button>
+                    </div>
+                    <p className="mt-12 text-stone-500 text-xs uppercase tracking-[0.3em]">As seen in Vogue • Harper's Bazaar • NYFW</p>
+                </div>
+                </section>
+
+                {/* Home About Preview */}
+                <section className="py-32 px-4 bg-white">
+                <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-20 items-center">
+                    <div className="relative">
+                    <div className="aspect-[4/5] bg-stone-100 rounded-3xl overflow-hidden shadow-2xl relative">
+                        <div className="absolute inset-0 flex items-center justify-center text-stone-300">
+                             {Camera ? <Camera size={48}/> : <span>Camera Icon</span>}
+                        </div>
+                    </div>
+                    <div className="absolute -bottom-10 -right-10 bg-amber-50 p-10 rounded-3xl hidden lg:block shadow-xl border border-amber-100">
+                        <p className="font-serif text-3xl text-stone-900">12+</p>
+                        <p className="text-xs text-stone-500 uppercase tracking-widest mt-1">Years of Artistry</p>
+                    </div>
+                    </div>
+                    <div>
+                    <h2 className="text-4xl md:text-5xl font-serif mb-8 text-stone-900">Your Vision, My Artistry</h2>
+                    <p className="text-stone-600 text-lg mb-6 leading-relaxed">
+                        For over 12 years, I've transformed faces and empowered confidence across New York's most prestigious stages, editorial shoots, and unforgettable wedding days.
+                    </p>
+                    <p className="text-stone-600 text-lg mb-10 leading-relaxed">
+                        From backstage at NYFW to intimate bridal suites in Brooklyn Heights, my approach blends technical precision with an intuitive understanding of what makes you feel like your most radiant self.
+                    </p>
+                    <Button variant="outline" onClick={() => navigate('about')}>Learn My Story</Button>
+                    </div>
+                </div>
+                </section>
+
+                {/* Portfolio Carousel */}
+                <section className="py-32 bg-stone-50 overflow-hidden">
+                <SectionHeading title="The Portfolio" subtitle="A curation of recent work spanning fashion editorials and high-end bridal." />
+                <div className="relative mt-12">
+                    <motion.div ref={scrollRef} drag="x" dragConstraints={{ right: 0, left: -1200 }} className="flex gap-8 px-8 cursor-grab active:cursor-grabbing md:px-[10%]">
+                    {portfolio.map((item) => (
+                        <div key={item.id} className="min-w-[300px] md:min-w-[450px]">
+                        <div className={`aspect-[3/4] ${item.color} rounded-3xl mb-6 relative overflow-hidden group`}>
+                            <div className="absolute inset-0 bg-stone-900/20 group-hover:bg-transparent transition-all duration-700"></div>
+                        </div>
+                        <h4 className="font-serif text-2xl mb-1">{item.title}</h4>
+                        <p className="text-stone-400 text-xs uppercase tracking-widest">{item.category}</p>
+                        </div>
                     ))}
-                 </div>
-              </div>
-              <div>
-                 <h4 className="font-serif text-lg mb-8">Navigation</h4>
-                 <ul className="space-y-4 text-stone-500 text-sm">
-                    {['about', 'services', 'masterclass', 'portfolio', 'faq'].map(item => (
-                      <li key={item}><button onClick={() => navigate(item)} className="hover:text-white capitalize transition-colors">{item}</button></li>
-                    ))}
-                 </ul>
-              </div>
-              <div>
-                 <h4 className="font-serif text-lg mb-8">Newsletter</h4>
-                 <p className="text-stone-500 text-xs mb-6 uppercase tracking-widest">Get makeup tips & cohort updates</p>
-                 <div className="flex border-b border-stone-800 pb-2">
-                    <input type="email" placeholder="Email Address" className="bg-transparent text-sm w-full outline-none py-2" />
-                    <button className="text-amber-200 uppercase text-[10px] font-bold tracking-widest">Join</button>
-                 </div>
-              </div>
-           </div>
-           <div className="pt-12 border-t border-stone-900 flex flex-col md:flex-row justify-between items-center gap-8 text-[10px] text-stone-600 uppercase tracking-[0.2em]">
-              <p>© 2026 Maya Sterling Makeup. All Rights Reserved.</p>
-              <div className="flex gap-8">
-                 <a href="#" className="hover:text-white">Privacy Policy</a>
-                 <a href="#" className="hover:text-white">Booking Policies</a>
-              </div>
-           </div>
-        </div>
-      </footer>
-    </div>
-  );
-};
+                    </motion.div>
+                    <div className="flex justify-center mt-16 items-center gap-4">
+                    <div className="w-24 h-[1px] bg-stone-200"></div>
+                    <span className="text-[10px] uppercase tracking-[0.3em] text-stone-400">Swipe to view</span>
+                    <div className="w-24 h-[1px] bg-stone-200"></div>
+                    </div>
+                </div>
+                </section>
 
-export default App;
+                {/* Testimonials */}
+                <section className="py-32 bg-stone-900 text-white overflow-hidden">
+                <div className="max-w-4xl mx-auto px-4 text-center">
+                    {Quote && <Quote className="mx-auto mb-10 text-amber-200 opacity-50" size={48} />}
+                    <div className="text-2xl md:text-3xl font-serif italic leading-relaxed mb-8">
+                    "Maya made me feel like a goddess on my wedding day. She listened to exactly what I wanted and elevated it beyond my expectations. A year later, I still get compliments on my bridal makeup!"
+                    </div>
+                    <p className="text-amber-200 uppercase tracking-widest text-sm">— Jasmine R., Brooklyn Bride</p>
+                </div>
+                </section>
+
+                {/* Social Proof logos */}
+                <section className="py-20 border-b border-stone-100">
+                <div className="max-w-7xl mx-auto px-4">
+                    <p className="text-center text-stone-400 text-[10px] uppercase tracking-[0.4em] mb-12">Trusted By Industry Leaders</p>
+                    <div className="flex flex-wrap justify-center gap-12 md:gap-24 grayscale opacity-40 items-center">
+                        {['VOGUE', "Harper's BAZAAR", 'ESSENCE', 'NYFW', 'THE KNOT'].map(logo => (
+                        <span key={logo} className="text-xl md:text-3xl font-serif">{logo}</span>
+                        ))}
+                    </div>
+                </div>
+                </section>
+            </div>
+            );
+        };
+
+        // --- About Page ---
+        const About = () => (
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="pt-32 pb-24">
+            <div className="max-w-5xl mx-auto px-4">
+                <h1 className="text-6xl md:text-8xl font-serif mb-16 text-stone-900">The Artist Behind the Brush</h1>
+                
+                <div className="grid md:grid-cols-2 gap-16 mb-24">
+                <div className="aspect-[3/4] bg-stone-100 rounded-3xl relative overflow-hidden">
+                    <div className="absolute inset-0 flex items-center justify-center text-stone-300 italic">Maya Sterling Portrait</div>
+                </div>
+                <div className="flex flex-col justify-center">
+                    <h2 className="text-3xl font-serif mb-6">From Passion to Profession</h2>
+                    <p className="text-stone-600 text-lg mb-6 leading-relaxed">
+                    My love affair with makeup began in my grandmother's bathroom in Bed-Stuy, experimenting with her lipstick collection while she told me stories about Brooklyn in the '60s. 
+                    </p>
+                    <p className="text-stone-600 text-lg mb-6 leading-relaxed">
+                    What started as childhood play evolved into a calling that would take me from the MAC counter at Macy's to the runways of New York Fashion Week. After graduating from the prestigious Makeup Designory in 2012, I immersed myself in New York's beauty scene.
+                    </p>
+                </div>
+                </div>
+
+                <div className="grid md:grid-cols-3 gap-12 py-24 border-y border-stone-100 mb-24">
+                <div>
+                    <h3 className="text-xl font-serif mb-4">Our Philosophy</h3>
+                    <p className="text-stone-500 text-sm leading-relaxed">Great makeup enhances—it never masks. My approach celebrates your unique features, skin tone, and personal style while ensuring you feel confident and camera-ready.</p>
+                </div>
+                <div>
+                    <h3 className="text-xl font-serif mb-4">Inclusivity First</h3>
+                    <p className="text-stone-500 text-sm leading-relaxed">Beauty has no boundaries. My kit is stocked for every skin tone, type, and texture. I prioritize cruelty-free products whenever possible.</p>
+                </div>
+                <div>
+                    <h3 className="text-xl font-serif mb-4">Education Legacy</h3>
+                    <p className="text-stone-500 text-sm leading-relaxed">Knowledge should be shared. I'm committed to elevating the next generation of artists through hands-on mentorship and business training.</p>
+                </div>
+                </div>
+
+                <div className="bg-stone-50 p-12 md:p-20 rounded-3xl">
+                <h3 className="text-3xl font-serif mb-12">Credentials & Features</h3>
+                <div className="grid md:grid-cols-2 gap-12">
+                    <div>
+                    <h4 className="text-xs uppercase tracking-widest text-amber-600 font-bold mb-6">Professional Training</h4>
+                    <ul className="space-y-4 text-stone-600">
+                        <li>• Makeup Designory (MUD), NYC Graduate</li>
+                        <li>• Advanced Airbrush Certification</li>
+                        <li>• Bridal Makeup Specialist Certification</li>
+                        <li>• Trained under Pat McGrath & Sam Fine</li>
+                    </ul>
+                    </div>
+                    <div>
+                    <h4 className="text-xs uppercase tracking-widest text-amber-600 font-bold mb-6">Featured In</h4>
+                    <ul className="space-y-4 text-stone-600">
+                        <li>• Vogue Magazine & Harper's Bazaar</li>
+                        <li>• Essence Magazine & Brides</li>
+                        <li>• The Knot Hall of Fame Inductee</li>
+                        <li>• NYFW Backstage (2018-2023)</li>
+                    </ul>
+                    </div>
+                </div>
+                </div>
+            </div>
+            </motion.div>
+        );
+
+        // --- Services Page ---
+        const Services = () => {
+            const services = [
+            {
+                id: 'bridal',
+                title: 'Bridal Beauty',
+                tagline: 'Your Most Beautiful Chapter',
+                description: 'Your wedding day deserves makeup that\'s as timeless as your love story. My bridal services ensure you look radiant, photograph beautifully, and feel completely yourself from the first look to the last dance.',
+                includes: ['Comprehensive consultation', 'Customized trial session', 'Wedding day application', 'Touch-up kit', 'False lash application'],
+                pricing: [
+                { label: 'The Essential Bride', price: '$450', desc: 'One trial + Wedding day application' },
+                { label: 'The Luxe Bride', price: '$850', desc: 'Two trials + Airbrush option + On-site touchups (2hr)' },
+                { label: 'The Complete Bridal Party', price: 'Custom', desc: 'Bride + 5 members + Mother of the bride' }
+                ]
+            },
+            {
+                id: 'editorial',
+                title: 'Editorial & Fashion',
+                tagline: 'Camera-Ready Artistry',
+                description: 'Whether you\'re shooting for a magazine cover or building a portfolio, I deliver high-fashion makeup that translates flawlessly on camera.',
+                includes: ['Professional kit (100+ items)', 'Multiple looks capability', 'Lighting optimization', 'Collaborative direction'],
+                pricing: [
+                { label: 'Full Day Rate', price: '$800', desc: 'Up to 8 hours' },
+                { label: 'Half Day Rate', price: '$500', desc: 'Up to 4 hours' },
+                { label: 'Hourly Rate', price: '$150', desc: 'For short sessions' }
+                ]
+            },
+            {
+                id: 'special',
+                title: 'Special Events',
+                tagline: 'Unforgettable Moments',
+                description: 'From galas to graduation, look your absolute best for life\'s important moments with custom looks designed for longevity.',
+                includes: ['Gala & Award Ceremonies', 'Prom & Milestone Birthdays', 'Corporate Headshots', 'Personal 1-on-1 Lessons'],
+                pricing: [
+                { label: 'Special Event Makeup', price: '$200', desc: 'In-studio session' },
+                { label: 'Group Sessions (3+)', price: '$175', desc: 'Per person rate' },
+                { label: 'Private 1-on-1 Lesson', price: '$250', desc: '2 hours intensive' }
+                ]
+            }
+            ];
+
+            return (
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="pt-32 pb-24">
+                <div className="max-w-7xl mx-auto px-4">
+                <SectionHeading title="Services Tailored to Your Moment" subtitle="Professional artistry for every milestone, from the runway to the aisle." />
+                
+                <div className="space-y-32">
+                    {services.map((service, idx) => (
+                    <div key={service.id} className={`flex flex-col lg:flex-row gap-16 items-start ${idx % 2 !== 0 ? 'lg:flex-row-reverse' : ''}`}>
+                        <div className="lg:w-1/2 w-full">
+                        <div className="aspect-[4/5] bg-stone-100 rounded-3xl relative overflow-hidden">
+                            <div className="absolute inset-0 flex items-center justify-center text-stone-300 italic">{service.title} Portfolio Image</div>
+                        </div>
+                        </div>
+                        <div className="lg:w-1/2 w-full">
+                        <span className="text-amber-600 font-bold uppercase tracking-widest text-xs mb-4 block">{service.tagline}</span>
+                        <h2 className="text-4xl md:text-5xl font-serif mb-6">{service.title}</h2>
+                        <p className="text-stone-600 text-lg mb-10 leading-relaxed">{service.description}</p>
+                        
+                        <div className="bg-stone-50 p-8 rounded-3xl mb-10">
+                            <h4 className="font-serif text-lg mb-6">Service Tiers</h4>
+                            <div className="space-y-6">
+                            {service.pricing.map((p, i) => (
+                                <div key={i} className="flex justify-between items-start border-b border-stone-200 pb-4">
+                                <div>
+                                    <p className="font-medium text-stone-900">{p.label}</p>
+                                    <p className="text-xs text-stone-500 mt-1">{p.desc}</p>
+                                </div>
+                                <p className="font-serif text-xl">{p.price}</p>
+                                </div>
+                            ))}
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4 mb-10">
+                            {service.includes.map((item, i) => (
+                            <div key={i} className="flex items-center gap-2 text-sm text-stone-600">
+                                {CheckCircle && <CheckCircle size={14} className="text-amber-600" />}
+                                <span>{item}</span>
+                            </div>
+                            ))}
+                        </div>
+                        
+                        <Button onClick={() => navigate('contact')}>Request Your Booking</Button>
+                        </div>
+                    </div>
+                    ))}
+                </div>
+
+                {/* Booking Info Footer */}
+                <div className="mt-32 p-12 md:p-20 bg-stone-900 text-white rounded-3xl grid md:grid-cols-2 gap-16">
+                    <div>
+                    <h3 className="text-3xl font-serif mb-8">How to Book</h3>
+                    <ul className="space-y-6">
+                        {[
+                        'Complete the inquiry form below',
+                        'Receive custom proposal within 24-48 hours',
+                        'Secure your date with 50% deposit',
+                        'Finalize details 2 weeks before session'
+                        ].map((step, i) => (
+                        <li key={i} className="flex gap-4">
+                            <span className="text-amber-200 font-serif text-2xl">0{i+1}</span>
+                            <p className="text-stone-400">{step}</p>
+                        </li>
+                        ))}
+                    </ul>
+                    </div>
+                    <div>
+                    <h3 className="text-3xl font-serif mb-8">Policies</h3>
+                    <p className="text-stone-400 mb-6">50% non-refundable deposit required to book. Final payment due 7 days before appointment. Cancellations within 14 days forfeit deposit.</p>
+                    <div className="flex items-center gap-2 text-amber-200 text-sm">
+                        {MapPin && <MapPin size={16}/>} <span>Travel fees apply for locations outside Brooklyn.</span>
+                    </div>
+                    </div>
+                </div>
+                </div>
+            </motion.div>
+            );
+        };
+
+        // --- Masterclass Page ---
+        const Masterclass = () => {
+            const curriculum = [
+            { week: '1-2', title: 'Foundations & Fundamentals', topics: ['Color theory & Anatomy', 'Skin prep & Matching', 'Sanitation Protocols', 'Building a Kit'] },
+            { week: '3-4', title: 'Mastering Techniques', topics: ['Contouring & Highlighting', 'Eye Techniques (Cut Crease, etc)', 'Lash Application', 'Airbrush Fundamentals'] },
+            { week: '5-6', title: 'Specializations', topics: ['Bridal (12+ Hour Wear)', 'Editorial & Runway', 'Mature Skin Expertise', 'HD Photography Makeup'] },
+            { week: '7-8', title: 'Business & Launch', topics: ['Pricing & Profitability', 'Contracts & Policies', 'Marketing & Social Media', 'Live Portfolio Shoot'] }
+            ];
+
+            return (
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="pt-32 pb-24 bg-white">
+                <div className="max-w-6xl mx-auto px-4">
+                <div className="text-center mb-24">
+                    <span className="text-amber-600 font-bold uppercase tracking-[0.4em] text-xs mb-6 block">8-Week Professional Intensive</span>
+                    <h1 className="text-5xl md:text-8xl font-serif mb-8 text-stone-900 leading-[1.1]">The Makeup Artistry Masterclass</h1>
+                    <p className="text-stone-600 text-xl max-w-2xl mx-auto font-light mb-12">Learn the technical skills, business strategies, and insider knowledge to launch your makeup artistry career with confidence.</p>
+                    <div className="flex flex-col items-center gap-4">
+                        <div className="bg-amber-50 px-8 py-3 rounded-full border border-amber-100 flex items-center gap-4">
+                            <span className="text-stone-900 font-medium">Next Cohort: March 15, 2026</span>
+                            <div className="w-[1px] h-4 bg-amber-200"></div>
+                            <span className="text-amber-700 font-bold">3 of 8 Spots Remaining</span>
+                        </div>
+                        <Button onClick={() => navigate('contact')}>Reserve Your Spot</Button>
+                    </div>
+                </div>
+
+                <div className="grid lg:grid-cols-2 gap-16 mb-32 items-center">
+                    <div className="bg-stone-900 p-12 rounded-3xl text-white">
+                    <h3 className="text-3xl font-serif mb-8">Why This Class?</h3>
+                    <p className="text-stone-400 mb-10 leading-relaxed italic">"Tired of YouTube tutorials that don't translate to real clients? You need professional techniques that work on all skin tones and the business systems to actually book clients."</p>
+                    <ul className="space-y-4">
+                        {['Small class sizes (Max 8)', 'Hands-on practice every week', 'Business training included', 'Certificate of Completion'].map((item, i) => (
+                        <li key={i} className="flex items-center gap-3 text-sm">
+                            {CheckCircle && <CheckCircle className="text-amber-400" size={18} />}
+                            <span>{item}</span>
+                        </li>
+                        ))}
+                    </ul>
+                    </div>
+                    <div className="space-y-8">
+                    <h3 className="text-3xl font-serif text-stone-900">Program Curriculum</h3>
+                    <div className="space-y-4">
+                        {curriculum.map((c, i) => (
+                        <details key={i} className="group border-b border-stone-100 pb-4">
+                            <summary className="list-none cursor-pointer flex justify-between items-center text-lg font-serif">
+                            <span>Week {c.week}: {c.title}</span>
+                            {Plus && <Plus className="group-open:rotate-45 transition-transform" size={20}/>}
+                            </summary>
+                            <ul className="mt-4 grid grid-cols-2 gap-2">
+                            {c.topics.map((t, j) => <li key={j} className="text-stone-500 text-sm">• {t}</li>)}
+                            </ul>
+                        </details>
+                        ))}
+                    </div>
+                    </div>
+                </div>
+
+                <div className="bg-stone-50 p-12 md:p-24 rounded-[3rem] text-center">
+                    <SectionHeading title="Invest In Your Future" subtitle="Investment: $2,800" />
+                    <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+                        <div className="bg-white p-10 rounded-3xl border border-stone-100 shadow-sm">
+                            <h4 className="font-serif text-2xl mb-4">Pay In Full</h4>
+                            <p className="text-4xl font-serif mb-6">$2,800</p>
+                            <p className="text-stone-500 text-sm mb-8">Save $200 compared to payment plans. Priority cohort selection.</p>
+                            <Button variant="outline" className="w-full">Enroll Today</Button>
+                        </div>
+                        <div className="bg-white p-10 rounded-3xl border border-stone-100 shadow-sm">
+                            <h4 className="font-serif text-2xl mb-4">Payment Plan</h4>
+                            <p className="text-4xl font-serif mb-6">$1,000 <span className="text-sm font-sans text-stone-400 font-light">+ 3 Payments</span></p>
+                            <p className="text-stone-500 text-sm mb-8">$1k Deposit + 3 monthly payments of $600. Manage your cash flow.</p>
+                            <Button variant="outline" className="w-full">Start Plan</Button>
+                        </div>
+                    </div>
+                </div>
+                </div>
+            </motion.div>
+            );
+        };
+
+        const Contact = () => (
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="pt-32 pb-24">
+            <div className="max-w-7xl mx-auto px-4 grid lg:grid-cols-2 gap-24">
+                <div>
+                <h1 className="text-6xl font-serif mb-8">Let's Create Something Beautiful</h1>
+                <p className="text-stone-600 text-lg mb-12">Whether you're booking your dream makeup session or ready to launch your career, please reach out. I respond to all inquiries within 48 hours.</p>
+                
+                <div className="space-y-10">
+                    <div className="flex gap-6">
+                    <div className="bg-amber-50 p-4 rounded-full h-fit">{Mail && <Mail className="text-amber-700"/>}</div>
+                    <div>
+                        <h4 className="font-serif text-xl">Email Us</h4>
+                        <p className="text-stone-500">hello@mayasterlingmakeup.com</p>
+                    </div>
+                    </div>
+                    <div className="flex gap-6">
+                    <div className="bg-amber-50 p-4 rounded-full h-fit">{MapPin && <MapPin className="text-amber-700"/>}</div>
+                    <div>
+                        <h4 className="font-serif text-xl">Studio Location</h4>
+                        <p className="text-stone-500">Williamsburg, Brooklyn, NY<br/>(Exact address provided upon booking)</p>
+                    </div>
+                    </div>
+                    <div className="flex gap-6">
+                    <div className="bg-amber-50 p-4 rounded-full h-fit">{Phone && <Phone className="text-amber-700"/>}</div>
+                    <div>
+                        <h4 className="font-serif text-xl">Text or Call</h4>
+                        <p className="text-stone-500">(718) 555-MAYA (6292)</p>
+                    </div>
+                    </div>
+                </div>
+                </div>
+
+                <div className="bg-stone-50 p-10 md:p-16 rounded-3xl border border-stone-100">
+                    <form className="space-y-6" onSubmit={e => e.preventDefault()}>
+                        <div className="grid md:grid-cols-2 gap-6">
+                        <div className="space-y-2">
+                            <label className="text-xs uppercase tracking-widest text-stone-400 font-bold">Name</label>
+                            <input type="text" className="w-full bg-white border border-stone-200 rounded-xl px-4 py-4 focus:ring-2 focus:ring-stone-900 outline-none transition-all" />
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-xs uppercase tracking-widest text-stone-400 font-bold">Email</label>
+                            <input type="email" className="w-full bg-white border border-stone-200 rounded-xl px-4 py-4 focus:ring-2 focus:ring-stone-900 outline-none transition-all" />
+                        </div>
+                        </div>
+                        <div className="space-y-2">
+                        <label className="text-xs uppercase tracking-widest text-stone-400 font-bold">I'm Interested In</label>
+                        <select className="w-full bg-white border border-stone-200 rounded-xl px-4 py-4 focus:ring-2 focus:ring-stone-900 outline-none transition-all appearance-none">
+                            <option>Bridal Beauty</option>
+                            <option>Editorial / Fashion</option>
+                            <option>Special Event</option>
+                            <option>Masterclass Enrollment</option>
+                        </select>
+                        </div>
+                        <div className="space-y-2">
+                        <label className="text-xs uppercase tracking-widest text-stone-400 font-bold">Tell Me About Your Vision</label>
+                        <textarea rows="4" className="w-full bg-white border border-stone-200 rounded-xl px-4 py-4 focus:ring-2 focus:ring-stone-900 outline-none transition-all"></textarea>
+                        </div>
+                        <Button className="w-full">Send Message</Button>
+                    </form>
+                </div>
+            </div>
+            </motion.div>
+        );
+
+        return (
+            <div className="min-h-screen bg-white font-sans text-stone-900 selection:bg-stone-900 selection:text-white">
+            <motion.div className="fixed top-0 left-0 right-0 h-1 bg-amber-600 z-[70] origin-left" style={{ scaleX }} />
+            
+            {/* Navigation */}
+            <nav className={`fixed w-full z-50 transition-all duration-700 ${scrolled ? 'bg-white/90 backdrop-blur-md py-4 shadow-sm' : 'bg-transparent py-10'}`}>
+                <div className="max-w-7xl mx-auto px-6 flex justify-between items-center">
+                <button onClick={() => navigate('home')} className={`text-2xl font-serif tracking-[0.2em] transition-colors ${!scrolled && currentPage === 'home' && !isMenuOpen ? 'text-white' : 'text-stone-900'}`}>
+                    MAYA STERLING
+                </button>
+                
+                <div className="hidden md:flex gap-10">
+                    {['home', 'about', 'services', 'masterclass', 'contact'].map((page) => (
+                    <button 
+                        key={page} 
+                        onClick={() => navigate(page)}
+                        className={`text-[10px] uppercase tracking-[0.3em] font-bold transition-all hover:text-amber-600 ${
+                        currentPage === page ? 'text-amber-600' : (!scrolled && currentPage === 'home' ? 'text-white' : 'text-stone-500')
+                        }`}
+                    >
+                        {page}
+                    </button>
+                    ))}
+                </div>
+
+                <button 
+                    className={`p-2 transition-colors ${!scrolled && currentPage === 'home' && !isMenuOpen ? 'text-white' : 'text-stone-900'}`}
+                    onClick={() => setIsMenuOpen(!isMenuOpen)}
+                >
+                    {isMenuOpen ? (X ? <X size={28} /> : <span>X</span>) : (Menu ? <Menu size={28} /> : <span>Menu</span>)}
+                </button>
+                </div>
+
+                {/* Fullscreen Mobile Menu */}
+                <AnimatePresence>
+                {isMenuOpen && (
+                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-stone-950 z-[60] flex flex-col items-center justify-center gap-8">
+                        {['home', 'about', 'services', 'masterclass', 'contact'].map((page) => (
+                        <motion.button 
+                            key={page} 
+                            whileHover={{ scale: 1.1 }}
+                            onClick={() => navigate(page)} 
+                            className="text-white text-5xl md:text-7xl font-serif lowercase hover:text-amber-200 transition-colors"
+                        >
+                            {page}
+                        </motion.button>
+                        ))}
+                        <div className="flex gap-8 mt-12">
+                        {Instagram && <Instagram className="text-stone-600 hover:text-white cursor-pointer"/>}
+                        {Facebook && <Facebook className="text-stone-600 hover:text-white cursor-pointer"/>}
+                        {Linkedin && <Linkedin className="text-stone-600 hover:text-white cursor-pointer"/>}
+                        </div>
+                    </motion.div>
+                )}
+                </AnimatePresence>
+            </nav>
+
+            <main>
+                <AnimatePresence mode="wait">
+                {currentPage === 'home' && <Home key="home" />}
+                {currentPage === 'about' && <About key="about" />}
+                {currentPage === 'services' && <Services key="services" />}
+                {currentPage === 'masterclass' && <Masterclass key="masterclass" />}
+                {currentPage === 'contact' && <Contact key="contact" />}
+                </AnimatePresence>
+            </main>
+
+            {/* Footer */}
+            <footer className="bg-stone-950 text-white pt-32 pb-12 px-6">
+                <div className="max-w-7xl mx-auto">
+                    <div className="grid lg:grid-cols-4 gap-16 mb-24">
+                    <div className="lg:col-span-2">
+                        <h2 className="text-3xl font-serif mb-8 tracking-widest">MAYA STERLING</h2>
+                        <p className="text-stone-500 max-w-sm mb-10 leading-relaxed">Empowering confidence through professional makeup artistry and world-class education. Based in Brooklyn, NY.</p>
+                        <div className="flex gap-4">
+                            {[Instagram, Facebook, Linkedin].map((Icon, i) => (
+                                Icon ? (
+                                    <a key={i} href="#" className="p-3 bg-stone-900 rounded-full hover:bg-amber-600 transition-colors">
+                                        <Icon size={18}/>
+                                    </a>
+                                ) : null
+                            ))}
+                        </div>
+                    </div>
+                    <div>
+                        <h4 className="font-serif text-lg mb-8">Navigation</h4>
+                        <ul className="space-y-4 text-stone-500 text-sm">
+                            {['about', 'services', 'masterclass', 'portfolio', 'faq'].map(item => (
+                            <li key={item}><button onClick={() => navigate(item)} className="hover:text-white capitalize transition-colors">{item}</button></li>
+                            ))}
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 className="font-serif text-lg mb-8">Newsletter</h4>
+                        <p className="text-stone-500 text-xs mb-6 uppercase tracking-widest">Get makeup tips & cohort updates</p>
+                        <div className="flex border-b border-stone-800 pb-2">
+                            <input type="email" placeholder="Email Address" className="bg-transparent text-sm w-full outline-none py-2" />
+                            <button className="text-amber-200 uppercase text-[10px] font-bold tracking-widest">Join</button>
+                        </div>
+                    </div>
+                    </div>
+                    <div className="pt-12 border-t border-stone-900 flex flex-col md:flex-row justify-between items-center gap-8 text-[10px] text-stone-600 uppercase tracking-[0.2em]">
+                    <p>© 2026 Maya Sterling Makeup. All Rights Reserved.</p>
+                    <div className="flex gap-8">
+                        <a href="#" className="hover:text-white">Privacy Policy</a>
+                        <a href="#" className="hover:text-white">Booking Policies</a>
+                    </div>
+                    </div>
+                </div>
+            </footer>
+            </div>
+        );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>

@@ -177,11 +177,58 @@
             return () => window.removeEventListener('scroll', handleScroll);
         }, []);
 
+        // --- SCROLL LOCK: Prevents background scrolling when menu is open ---
+        useEffect(() => {
+            if (isMenuOpen) {
+                document.body.style.overflow = 'hidden';
+            } else {
+                document.body.style.overflow = 'unset';
+            }
+            return () => {
+                document.body.style.overflow = 'unset';
+            }
+        }, [isMenuOpen]);
+
         const navigate = (page) => {
             setCurrentPage(page);
             setIsMenuOpen(false);
             window.scrollTo({ top: 0, behavior: 'smooth' });
         };
+
+        // Determine Nav Background
+        // If menu is open, we keep it transparent so we don't block the menu/backdrop with a white nav bar
+        const getNavBg = () => {
+            if (isMenuOpen) return 'bg-transparent';
+            return scrolled ? 'bg-white/90 backdrop-blur-md py-4 shadow-sm' : 'bg-transparent py-10';
+        };
+
+        // Determine Logo Color
+        // The logo is on the LEFT. If the menu (60% width on the RIGHT) is open, 
+        // the logo is sitting over the site content/backdrop, NOT the black menu.
+        // So it should behave normally (based on scroll/page), unless we want it to fade out.
+        // We'll keep it visible in its natural state.
+        const getLogoColor = () => {
+            if (!scrolled && currentPage === 'home') return 'text-white';
+            return 'text-stone-900';
+        };
+
+        // Determine Toggle Button Color
+        // The button is on the RIGHT. It sits ON TOP of the black menu when open.
+        // So if open, it MUST be white.
+        const getToggleColor = () => {
+            if (isMenuOpen) return 'text-white';
+            if (!scrolled && currentPage === 'home') return 'text-white';
+            return 'text-stone-900';
+        };
+
+        const navBg = getNavBg();
+        const logoColor = getLogoColor();
+        const toggleColor = getToggleColor();
+        
+        // Helper for CTA button styling based on current state
+        const ctaStyle = toggleColor === 'text-white' 
+            ? 'border-white text-white hover:bg-white hover:text-stone-900' 
+            : 'border-stone-900 text-stone-900 hover:bg-stone-900 hover:text-white';
 
         // --- Home Page ---
         const Home = () => {
@@ -662,55 +709,95 @@
             <div className="min-h-screen bg-white font-sans text-stone-900 selection:bg-stone-900 selection:text-white">
             <motion.div className="fixed top-0 left-0 right-0 h-1 bg-amber-600 z-[70] origin-left" style={{ scaleX }} />
             
-            {/* Navigation */}
-            <nav className={`fixed w-full z-50 transition-all duration-700 ${scrolled ? 'bg-white/90 backdrop-blur-md py-4 shadow-sm' : 'bg-transparent py-10'}`}>
-                <div className="max-w-7xl mx-auto px-6 flex justify-between items-center">
-                <button onClick={() => navigate('home')} className={`text-2xl font-serif tracking-[0.2em] transition-colors ${!scrolled && currentPage === 'home' && !isMenuOpen ? 'text-white' : 'text-stone-900'}`}>
-                    MAYA STERLING
-                </button>
-                
-                <div className="hidden md:flex gap-10">
-                    {['home', 'about', 'services', 'masterclass', 'contact'].map((page) => (
+            {/* Navigation 
+                UPDATED Z-INDEX: Changed from z-50 to z-[70] to ensure it stays on top of the menu overlay.
+            */}
+            <nav className={`fixed w-full z-[70] transition-all duration-700 ${navBg}`}>
+                <div className="max-w-7xl mx-auto px-4 md:px-6 flex justify-between items-center h-16 md:h-20">
+                    
+                    {/* Logo - Adjusted spacing for mobile to prevent wrapping */}
                     <button 
-                        key={page} 
-                        onClick={() => navigate(page)}
-                        className={`text-[10px] uppercase tracking-[0.3em] font-bold transition-all hover:text-amber-600 ${
-                        currentPage === page ? 'text-amber-600' : (!scrolled && currentPage === 'home' ? 'text-white' : 'text-stone-500')
-                        }`}
+                        onClick={() => navigate('home')} 
+                        className={`text-lg md:text-2xl font-serif tracking-[0.15em] md:tracking-[0.2em] transition-colors whitespace-nowrap z-[71] ${logoColor}`}
                     >
-                        {page}
+                        MAYA STERLING
                     </button>
-                    ))}
-                </div>
-
-                <button 
-                    className={`p-2 transition-colors ${!scrolled && currentPage === 'home' && !isMenuOpen ? 'text-white' : 'text-stone-900'}`}
-                    onClick={() => setIsMenuOpen(!isMenuOpen)}
-                >
-                    {isMenuOpen ? (X ? <X size={28} /> : <span>X</span>) : (Menu ? <Menu size={28} /> : <span>Menu</span>)}
-                </button>
-                </div>
-
-                {/* Fullscreen Mobile Menu */}
-                <AnimatePresence>
-                {isMenuOpen && (
-                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-stone-950 z-[60] flex flex-col items-center justify-center gap-8">
+                    
+                    {/* Desktop Links - Centered & Hidden on Tablet/Mobile to prevent crowding */}
+                    <div className="hidden lg:flex gap-8 xl:gap-12 items-center absolute left-1/2 -translate-x-1/2">
                         {['home', 'about', 'services', 'masterclass', 'contact'].map((page) => (
-                        <motion.button 
+                        <button 
                             key={page} 
-                            whileHover={{ scale: 1.1 }}
-                            onClick={() => navigate(page)} 
-                            className="text-white text-5xl md:text-7xl font-serif lowercase hover:text-amber-200 transition-colors"
+                            onClick={() => navigate(page)}
+                            className={`text-[10px] uppercase tracking-[0.2em] font-bold transition-all hover:text-amber-600 ${
+                            currentPage === page && !isMenuOpen ? 'text-amber-600' : (isMenuOpen ? 'text-stone-400 hover:text-white' : 'text-stone-500')
+                            }`}
                         >
                             {page}
-                        </motion.button>
+                        </button>
                         ))}
-                        <div className="flex gap-8 mt-12">
-                        {Instagram && <Instagram className="text-stone-600 hover:text-white cursor-pointer"/>}
-                        {Facebook && <Facebook className="text-stone-600 hover:text-white cursor-pointer"/>}
-                        {Linkedin && <Linkedin className="text-stone-600 hover:text-white cursor-pointer"/>}
-                        </div>
-                    </motion.div>
+                    </div>
+
+                    {/* Right Side Actions: CTA + Hamburger */}
+                    <div className="flex items-center gap-4 md:gap-6 z-[71]">
+                        {/* Book Now CTA - Visible on Tablet+ */}
+                        <button 
+                            onClick={() => navigate('contact')}
+                            className={`hidden md:block text-[10px] uppercase tracking-widest border px-5 py-2 rounded-full transition-all ${ctaStyle}`}
+                        >
+                            Book Now
+                        </button>
+
+                        <button 
+                            className={`p-2 transition-colors ${toggleColor}`}
+                            onClick={() => setIsMenuOpen(!isMenuOpen)}
+                        >
+                            {isMenuOpen ? (X ? <X size={24} /> : <span>X</span>) : (Menu ? <Menu size={24} /> : <span>Menu</span>)}
+                        </button>
+                    </div>
+                </div>
+
+                {/* Fullscreen Mobile Menu 
+                    Kept z-[60], which is now lower than Nav z-[70].
+                    CHANGED: Added right-0 w-[60%] and animation logic for slide-in drawer.
+                */}
+                <AnimatePresence>
+                {isMenuOpen && (
+                    <>
+                        {/* Dimmed Backdrop (closes menu on click) */}
+                        <motion.div 
+                            initial={{ opacity: 0 }} 
+                            animate={{ opacity: 1 }} 
+                            exit={{ opacity: 0 }} 
+                            className="fixed inset-0 bg-black/40 z-[59]"
+                            onClick={() => setIsMenuOpen(false)}
+                        />
+                        
+                        {/* Slide-in Menu Drawer (60% width) */}
+                        <motion.div 
+                            initial={{ x: '100%' }} 
+                            animate={{ x: 0 }} 
+                            exit={{ x: '100%' }} 
+                            transition={{ type: "tween", duration: 0.3 }}
+                            className="fixed top-0 right-0 h-full w-[60%] bg-stone-950 z-[60] flex flex-col items-center justify-center gap-8 shadow-2xl touch-none"
+                        >
+                            {['home', 'about', 'services', 'masterclass', 'contact'].map((page) => (
+                            <motion.button 
+                                key={page} 
+                                whileHover={{ scale: 1.1 }}
+                                onClick={() => navigate(page)} 
+                                className="text-white text-3xl md:text-5xl font-serif lowercase hover:text-amber-200 transition-colors"
+                            >
+                                {page}
+                            </motion.button>
+                            ))}
+                            <div className="flex gap-8 mt-12">
+                            {Instagram && <Instagram className="text-stone-600 hover:text-white cursor-pointer"/>}
+                            {Facebook && <Facebook className="text-stone-600 hover:text-white cursor-pointer"/>}
+                            {Linkedin && <Linkedin className="text-stone-600 hover:text-white cursor-pointer"/>}
+                            </div>
+                        </motion.div>
+                    </>
                 )}
                 </AnimatePresence>
             </nav>

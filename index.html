@@ -189,11 +189,11 @@
             
             // Updated Portfolio Data with filenames
             const portfolio = [
-                { id: 1, title: 'Editorial Glow', category: 'Fashion', img: 'images/portfolio-fashion.jpg' },
+                { id: 1, title: 'Editorial Glow', category: 'Fashion', img: 'images/portfolio-editorial.jpg' },
                 { id: 2, title: 'Modern Bride', category: 'Bridal', img: 'images/portfolio-bridal.jpg' },
-                { id: 3, title: 'Met Gala Concept', category: 'Avant Garde', img: 'images/portfolio-avantgarde.jpg' },
-                { id: 4, title: 'Summer Runway', category: 'Commercial', img: 'images/portfolio-commercial.jpg' },
-                { id: 5, title: 'Ethereal Soul', category: 'Editorial', img: 'images/portfolio-editorial.jpg' },
+                { id: 3, title: 'Summer Runway', category: 'Commercial', img: 'images/portfolio-fashion.jpg' },
+                { id: 4, title: 'Met Gala Concept', category: 'Avant Garde', img: 'images/portfolio-avantgarde.jpg' },
+                { id: 5, title: 'Ethereal Soul', category: 'Editorial', img: 'images/portfolio-commercial.jpg' },
             ];
 
             return (
@@ -222,7 +222,7 @@
                     </motion.p>
                     <div className="flex flex-col md:flex-row gap-6 justify-center">
                     <Button variant="white" onClick={() => navigate('contact')}>Book Your Session</Button>
-                    <Button variant="outline" className="text-white border-white hover:bg-white hover:text-stone-900" onClick={() => navigate('masterclass')}>Explore Masterclass</Button>
+                    <Button variant="outline" className="text-white border-white hover:bg-white hover:!text-stone-900 active:bg-white active:!text-stone-900" onClick={() => navigate('masterclass')}>Explore Masterclass</Button>
                     </div>
                     <p className="mt-12 text-stone-500 text-xs uppercase tracking-[0.3em]">As seen in Vogue • Harper's Bazaar • NYFW</p>
                 </div>

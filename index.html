@@ -286,9 +286,10 @@
                             className="w-full h-full" 
                         />
                     </div>
-                    <div className="absolute -bottom-10 -right-10 bg-amber-50 p-10 rounded-3xl hidden lg:block shadow-xl border border-amber-100">
-                        <p className="font-serif text-3xl text-stone-900">12+</p>
-                        <p className="text-xs text-stone-500 uppercase tracking-widest mt-1">Years of Artistry</p>
+                    {/* Updated: Made visible on all devices with responsive positioning/sizing */}
+                    <div className="absolute -bottom-6 -right-4 md:-bottom-10 md:-right-10 bg-amber-50 p-6 md:p-10 rounded-3xl shadow-xl border border-amber-100 z-20">
+                        <p className="font-serif text-xl md:text-3xl text-stone-900">12+</p>
+                        <p className="text-[10px] md:text-xs text-stone-500 uppercase tracking-widest mt-1">Years of Artistry</p>
                     </div>
                     </div>
                     <div>
@@ -325,9 +326,13 @@
                     ))}
                     </motion.div>
                     <div className="flex justify-center mt-16 items-center gap-4">
-                    <div className="w-24 h-[1px] bg-stone-200"></div>
-                    <span className="text-[10px] uppercase tracking-[0.3em] text-stone-400">Swipe to view</span>
-                    <div className="w-24 h-[1px] bg-stone-200"></div>
+                        <div className="w-24 h-[1px] bg-stone-200"></div>
+                        <span className="text-[10px] uppercase tracking-[0.3em] text-stone-400">Swipe to view</span>
+                        <div className="w-24 h-[1px] bg-stone-200"></div>
+                    </div>
+                    
+                    <div className="flex justify-center mt-12">
+                        <Button variant="outline" onClick={() => navigate('services')}>View Services & Prices</Button>
                     </div>
                 </div>
                 </section>
